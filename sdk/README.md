@@ -116,6 +116,36 @@ async def get_data(request: Request):
     return {"agent_id": request.state.agent.agent_id}
 ```
 
+## Supported Policies
+
+All SDKs call `POST /api/verify/policy/{pack_id}`. Supported `pack_id` values (from policy registry):
+
+| Policy Pack | Capability | Min Assurance |
+|-------------|------------|---------------|
+| agent.session.create.v1 | agent.session.create | L0 |
+| agent.tool.register.v1 | agent.tool.register | L0 |
+| code.release.publish.v1 | repo.release | L3 |
+| code.repository.merge.v1 | repo.pr.create, repo.merge | L2 |
+| data.export.create.v1 | data.export | L1 |
+| data.file.read.v1 | data.file.read | L0 |
+| data.file.write.v1 | data.file.write | L0 |
+| data.report.ingest.v1 | data.report.ingest | L2 |
+| deliverable.task.complete.v1 | deliverable.task.complete | L0 |
+| finance.crypto.trade.v1 | finance.crypto.trade | L3 |
+| finance.payment.charge.v1 | payments.charge | L2 |
+| finance.payment.payout.v1 | payments.payout | L3 |
+| finance.payment.refund.v1 | finance.payment.refund | L2 |
+| finance.transaction.execute.v1 | finance.transaction | L3 |
+| governance.data.access.v1 | data.access | L3 |
+| legal.contract.review.v1 | legal.contract.review | L3 |
+| mcp.tool.execute.v1 | mcp.tool.execute | L0 |
+| messaging.message.send.v1 | messaging.send | L0 |
+| system.command.execute.v1 | system.command.execute | L0 |
+| web.browser.v1 | web.browser | L0 |
+| web.fetch.v1 | web.fetch | L0 |
+
+For required context fields per policy: `GET /api/policies` or `GET /api/policies/{pack_id}`.
+
 ## 🔧 Features
 
 ### SDK Features

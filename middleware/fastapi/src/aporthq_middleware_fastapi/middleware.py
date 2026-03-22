@@ -613,6 +613,11 @@ def require_repository_policy(agent_id: Optional[str] = None) -> Callable:
     return require_policy("code.repository.merge.v1", agent_id)
 
 
+def require_deliverable_task_complete_policy(agent_id: Optional[str] = None) -> Callable:
+    """Require deliverable task completion policy."""
+    return require_policy("deliverable.task.complete.v1", agent_id)
+
+
 # Direct SDK functions for convenience (async; await required)
 async def get_decision_token(
     agent_id: str,

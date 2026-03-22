@@ -416,4 +416,31 @@ export class PolicyVerifier {
       idempotencyKey
     );
   }
+
+  /**
+   * Verify deliverable.task.complete.v1 — task completion gate.
+   * Requires task_id, output_type, criteria_attestations. Optional: summary, tests_passing,
+   * reviewer_agent_id, author_agent_id, output_content per passport limits.
+   */
+  async verifyDeliverableTaskComplete(
+    agentId: string,
+    context: {
+      task_id: string;
+      output_type: "code" | "document" | "analysis" | "plan" | "data" | "other";
+      criteria_attestations: Array<{ criterion_id: string; met: boolean; evidence: string }>;
+      summary?: string;
+      tests_passing?: boolean;
+      reviewer_agent_id?: string;
+      author_agent_id?: string;
+      output_content?: string;
+    },
+    idempotencyKey?: string
+  ): Promise<PolicyVerificationResponse> {
+    return this.client.verifyPolicy(
+      agentId,
+      "deliverable.task.complete.v1",
+      context,
+      idempotencyKey
+    );
+  }
 }

@@ -473,6 +473,8 @@ export const requireMessagingPolicy = (agentId?: string) =>
   requirePolicy("messaging.message.send.v1", agentId);
 export const requireRepositoryPolicy = (agentId?: string) =>
   requirePolicy("code.repository.merge.v1", agentId);
+export const requireDeliverableTaskCompletePolicy = (agentId?: string) =>
+  requirePolicy("deliverable.task.complete.v1", agentId);
 
 /**
  * Get decision token for near-zero latency validation

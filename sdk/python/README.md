@@ -105,7 +105,7 @@ Initializes the APort client.
 #### `async verify_policy(agent_id: str, policy_id: str, context: Dict[str, Any] = None, idempotency_key: str = None, *, passport: Dict = None, policy: PolicyPack = None) -> PolicyVerificationResponse`
 Verifies a policy against an agent by calling the `/api/verify/policy/:pack_id` endpoint. Optionally pass `passport` and/or `policy` as keyword-only args for local/dynamic mode.
 - `agent_id` (str): The ID of the agent.
-- `policy_id` (str): The ID of the policy pack (e.g., `finance.payment.refund.v1`, `code.release.publish.v1`).
+- `policy_id` (str): The ID of the policy pack (e.g., `finance.payment.refund.v1`, `deliverable.task.complete.v1`, `code.release.publish.v1`).
 - `context` (Dict[str, Any], optional): The policy-specific context data.
 - `idempotency_key` (str, optional): An optional idempotency key for the request.
 - `passport` (dict, optional, keyword-only): Passport object to send in body (local mode).
@@ -144,6 +144,9 @@ Verifies the `finance.payment.refund.v1` policy.
 
 #### `async verify_repository(agent_id: str, context: Dict[str, Any], idempotency_key: str = None) -> PolicyVerificationResponse`
 Verifies the `code.repository.merge.v1` policy.
+
+#### `async verify_deliverable_task_complete(agent_id: str, context: Dict[str, Any], idempotency_key: str = None) -> PolicyVerificationResponse`
+Verifies the `deliverable.task.complete.v1` policy (task completion gate).
 
 #### Additional Policy Methods
 The `PolicyVerifier` also includes convenience methods for other policies:

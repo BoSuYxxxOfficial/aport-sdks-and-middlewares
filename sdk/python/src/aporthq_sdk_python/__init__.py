@@ -22,7 +22,7 @@ from .errors import AportError
 # Backward compatibility - re-export from shared_types
 from .shared_types import PassportData, AgentPassport
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __all__ = [
     # Core SDK
     "APortClient",

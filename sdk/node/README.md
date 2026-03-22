@@ -117,7 +117,7 @@ Initializes the APort client.
 #### `verifyPolicy(agentId: string, policyId: string, context?: Record<string, any>, idempotencyKey?: string, options?: { passport?: PassportData; policy?: PolicyPack }): Promise<PolicyVerificationResponse>`
 Verifies a policy against an agent by calling the `/api/verify/policy/:pack_id` endpoint. Optionally pass `passport` and/or `policy` in the request body (local/dynamic mode).
 - `agentId` (string): The ID of the agent.
-- `policyId` (string): The ID of the policy pack (e.g., `finance.payment.refund.v1`, `code.release.publish.v1`).
+- `policyId` (string): The ID of the policy pack (e.g., `finance.payment.refund.v1`, `deliverable.task.complete.v1`, `code.release.publish.v1`).
 - `context` (Record<string, any>, optional): The policy-specific context data.
 - `idempotencyKey` (string, optional): An optional idempotency key for the request.
 - `options` (object, optional): `{ passport?: PassportData; policy?: PolicyPack }` to send passport/policy in body.
@@ -155,6 +155,9 @@ Verifies the `finance.payment.refund.v1` policy.
 
 #### `verifyRepository(agentId: string, context: { operation: "create_pr" | "merge"; repository: string; base_branch?: string; pr_size_kb?: number; file_paths?: string[]; github_actor?: string; title?: string; description?: string; }, idempotencyKey?: string): Promise<PolicyVerificationResponse>`
 Verifies the `code.repository.merge.v1` policy.
+
+#### `verifyDeliverableTaskComplete(agentId: string, context: { task_id: string; output_type: "code" | "document" | "analysis" | "plan" | "data" | "other"; criteria_attestations: Array<{ criterion_id: string; met: boolean; evidence: string }>; summary?: string; tests_passing?: boolean; reviewer_agent_id?: string; author_agent_id?: string; output_content?: string; }, idempotencyKey?: string): Promise<PolicyVerificationResponse>`
+Verifies the `deliverable.task.complete.v1` policy (task completion gate).
 
 #### Additional Policy Methods
 The `PolicyVerifier` also includes convenience methods for other policies:

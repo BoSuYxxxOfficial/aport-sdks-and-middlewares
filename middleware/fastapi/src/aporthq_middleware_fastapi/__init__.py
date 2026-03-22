@@ -12,6 +12,7 @@ from .middleware import (
     require_data_export_policy,
     require_messaging_policy,
     require_repository_policy,
+    require_deliverable_task_complete_policy,
     # Direct SDK functions
     get_decision_token,
     validate_decision_token,
@@ -56,6 +57,7 @@ __all__ = [
     "require_data_export_policy",
     "require_messaging_policy",
     "require_repository_policy",
+    "require_deliverable_task_complete_policy",
     
     # Direct SDK functions
     "get_decision_token",

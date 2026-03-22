@@ -1,6 +1,6 @@
 {
   "name": "@aporthq/middleware-express",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "Express.js middleware for The Passport for AI Agents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

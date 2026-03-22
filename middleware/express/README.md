@@ -16,7 +16,7 @@ npm install @aporthq/middleware-express
 - **Two Options**: Pass agent ID as function parameter (preferred) or use `X-Agent-Passport-Id` header
 - **Resolution Priority**: Function parameter > Header > Fail with 401
 - **API base URL**: Defaults to `https://api.aport.io` (configurable via `baseUrl` or `AGENT_PASSPORT_BASE_URL`)
-- **Policies**: Choose from `finance.payment.refund.v1`, `data.export.create.v1`, `messaging.message.send.v1`, `code.repository.merge.v1`
+- **Policies**: Any registered policy (e.g. `finance.payment.refund.v1`, `system.command.execute.v1`, `deliverable.task.complete.v1`). See [Available Policies](#available-policies) below. Full list: `GET /api/policies`
 
 | **Method** | **Agent ID Source** | **Security** | **Use Case** |
 |------------|-------------------|--------------|--------------|
@@ -194,6 +194,41 @@ app.post('/api/refunds', requirePolicy("finance.payment.refund.v1", AGENT_ID), (
 - **Assurance:** L2 minimum
 - **Fields:** `repository`, `base_branch`, `pr_size_kb`
 - **Rules:** Repository access, branch protection, PR size limits
+
+### deliverable.task.complete.v1
+
+- **Capabilities:** `["deliverable.task.complete"]`
+- **Assurance:** L0 minimum
+- **Fields:** `task_id`, `output_type`, `criteria_attestations` (required); `summary`, `tests_passing`, `reviewer_agent_id`, `author_agent_id`, `output_content` (optional per limits)
+- **Rules:** Acceptance criteria attestations, summary word count, tests passing, different reviewer, blocked pattern scan
+
+### All Registered Policies
+
+| Policy Pack | Capability | Min Assurance |
+|-------------|------------|---------------|
+| `agent.session.create.v1` | agent.session.create | L0 |
+| `agent.tool.register.v1` | agent.tool.register | L0 |
+| `code.release.publish.v1` | repo.release | L3 |
+| `code.repository.merge.v1` | repo.pr.create, repo.merge | L2 |
+| `data.export.create.v1` | data.export | L1 |
+| `data.file.read.v1` | data.file.read | L0 |
+| `data.file.write.v1` | data.file.write | L0 |
+| `data.report.ingest.v1` | data.report.ingest | L2 |
+| `deliverable.task.complete.v1` | deliverable.task.complete | L0 |
+| `finance.crypto.trade.v1` | finance.crypto.trade | L3 |
+| `finance.payment.charge.v1` | payments.charge | L2 |
+| `finance.payment.payout.v1` | payments.payout | L3 |
+| `finance.payment.refund.v1` | finance.payment.refund | L2 |
+| `finance.transaction.execute.v1` | finance.transaction | L3 |
+| `governance.data.access.v1` | data.access | L3 |
+| `legal.contract.review.v1` | legal.contract.review | L3 |
+| `mcp.tool.execute.v1` | mcp.tool.execute | L0 |
+| `messaging.message.send.v1` | messaging.send | L0 |
+| `system.command.execute.v1` | system.command.execute | L0 |
+| `web.browser.v1` | web.browser | L0 |
+| `web.fetch.v1` | web.fetch | L0 |
+
+For schema and required context per policy: `GET /api/policies` or `GET /api/policies/{pack_id}`.
 
 ## Error Handling
 

@@ -385,3 +385,14 @@ class PolicyVerifier:
         return await self.client.verify_policy(
             agent_id, "code.repository.merge.v1", context, idempotency_key
         )
+
+    async def verify_deliverable_task_complete(
+        self,
+        agent_id: str,
+        context: Dict[str, Any],
+        idempotency_key: Optional[str] = None,
+    ) -> PolicyVerificationResponse:
+        """Verify the deliverable.task.complete.v1 policy (task completion gate)."""
+        return await self.client.verify_policy(
+            agent_id, "deliverable.task.complete.v1", context, idempotency_key
+        )
