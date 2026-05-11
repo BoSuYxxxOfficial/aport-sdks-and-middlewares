@@ -17,6 +17,7 @@ on:
           - sdk-python
           - middleware-express
           - middleware-fastapi
+          - middleware-django
           - all
       version:
         description: "Version to publish (e.g., 0.1.0)"
@@ -87,6 +88,14 @@ jobs:
           cd middleware/fastapi
           if [ ! -f "pyproject.toml" ]; then
             echo "❌ FastAPI middleware pyproject.toml not found"
+            exit 1
+          fi
+          cd ../..
+
+          echo "Checking Django middleware..."
+          cd middleware/django
+          if [ ! -f "pyproject.toml" ]; then
+            echo "❌ Django middleware pyproject.toml not found"
             exit 1
           fi
           cd ../..
@@ -189,6 +198,13 @@ jobs:
             ls -la middleware/fastapi/dist/
           else
             echo "❌ FastAPI Middleware: Build failed"
+          fi
+
+          if [ -d "middleware/django/dist" ]; then
+            echo "✅ Django Middleware: Built successfully"
+            ls -la middleware/django/dist/
+          else
+            echo "❌ Django Middleware: Build failed"
           fi
 
           echo "=================="
@@ -599,6 +615,154 @@ jobs:
               exit(1)
           "
 
+  publish-middleware-django:
+    if: always() && (needs.publish-sdk-python.result == 'success' || needs.publish-sdk-python.result == 'skipped') && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && (github.event.inputs.package == 'middleware-django' || github.event.inputs.package == 'all')))
+    needs: publish-sdk-python
+    runs-on: ubuntu-latest
+    env:
+      TWINE_USERNAME: __token__
+      TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Setup Node.js (for VERSION from sdk/node/package.json)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Resolve VERSION
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+          elif [[ -n "${{ github.event.inputs.version }}" ]]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=$(node -p "require('./sdk/node/package.json').version")" >> $GITHUB_ENV
+          fi
+          echo "Resolved VERSION=$VERSION"
+
+      - name: Check if Django middleware directory exists
+        run: |
+          if [ ! -d "middleware/django" ]; then
+            echo "❌ middleware/django directory not found"
+            echo "Available directories:"
+            ls -la
+            echo "Contents of current directory:"
+            find . -type d -name "*" | head -20
+            exit 1
+          else
+            echo "✅ middleware/django directory found"
+            ls -la middleware/django/
+          fi
+
+      - name: Check if package already exists
+        run: |
+          cd middleware/django
+          echo "Checking if version $VERSION already exists on PyPI..."
+          python -c "
+          import requests
+          package_name = 'aporthq-middleware-django'
+          try:
+              response = requests.get(f'https://pypi.org/pypi/{package_name}/json')
+              if response.status_code == 200:
+                  data = response.json()
+                  if '$VERSION' in data['releases']:
+                      print(f'Version $VERSION already exists on PyPI - skipping publish')
+                      exit(1)  # Skip publish
+                  else:
+                      print(f'Version $VERSION is available for publishing')
+                      exit(0)  # Continue with publish
+              else:
+                  print(f'Package {package_name} not found on PyPI, ready for first release')
+                  exit(0)  # Continue with publish
+          except Exception as e:
+              print(f'Error checking PyPI: {e}')
+              exit(0)  # Continue with publish
+          "
+          if [ $? -eq 0 ]; then
+            echo "SKIP_PUBLISH=false" >> $GITHUB_ENV
+          else
+            echo "SKIP_PUBLISH=true" >> $GITHUB_ENV
+          fi
+
+      - name: Clean build artifacts
+        run: |
+          cd middleware/django
+          rm -rf dist/ build/ src/*.egg-info/
+          echo "✅ Cleaned Django middleware build artifacts"
+
+      - name: Install dependencies
+        run: |
+          cd middleware/django
+          pip install build twine pytest pytest-django requests tomli
+
+      - name: Install published Python SDK (same version as this release)
+        run: |
+          pip install aporthq-sdk-python==$VERSION
+          echo "✅ Using aporthq-sdk-python==$VERSION from PyPI"
+
+      - name: Run tests
+        run: |
+          cd middleware/django
+          pip install -e .
+          python -m pytest tests -q
+
+      - name: Build package
+        run: |
+          cd middleware/django
+          python -m build
+          echo "✅ Built Django middleware successfully"
+
+      - name: Verify build artifacts
+        run: |
+          cd middleware/django
+          if [ ! -d "dist" ]; then
+            echo "❌ Build failed: dist/ directory not found"
+            exit 1
+          fi
+          if [ ! -f dist/*.whl ]; then
+            echo "❌ Build failed: wheel file not found in dist/"
+            exit 1
+          fi
+          if [ ! -f dist/*.tar.gz ]; then
+            echo "❌ Build failed: source distribution not found in dist/"
+            exit 1
+          fi
+          echo "✅ Build artifacts verified: wheel and source distribution exist"
+
+      - name: Publish to PyPI
+        if: env.SKIP_PUBLISH != 'true'
+        run: |
+          cd middleware/django
+          python -m twine upload dist/*
+
+      - name: Verify publication
+        if: env.SKIP_PUBLISH != 'true'
+        run: |
+          echo "Verifying aporthq-middleware-django@$VERSION is available on PyPI..."
+          python -c "
+          import requests
+          response = requests.get('https://pypi.org/pypi/aporthq-middleware-django/json')
+          if response.status_code == 200:
+              data = response.json()
+              if '$VERSION' in data['releases']:
+                  print(f'✅ Version $VERSION successfully published to PyPI')
+              else:
+                  print(f'❌ Version $VERSION not found on PyPI')
+                  exit(1)
+          else:
+              print(f'❌ Error verifying publication: {response.status_code}')
+              exit(1)
+          "
+
   create-release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
@@ -607,6 +771,7 @@ jobs:
         publish-sdk-python,
         publish-middleware-express,
         publish-middleware-fastapi,
+        publish-middleware-django,
       ]
     runs-on: ubuntu-latest
     steps:
@@ -632,6 +797,7 @@ jobs:
             - **aporthq-sdk-python** - Python SDK
             - **@aporthq/middleware-express** - Express.js middleware
             - **aporthq-middleware-fastapi** - FastAPI middleware
+            - **aporthq-middleware-django** - Django middleware
 
             ### Installation
             ```bash
@@ -642,6 +808,7 @@ jobs:
             # Python
             pip install aporthq-sdk-python==${{ github.ref_name }}
             pip install aporthq-middleware-fastapi==${{ github.ref_name }}
+            pip install aporthq-middleware-django==${{ github.ref_name }}
             ```
 
             ### Documentation
@@ -649,6 +816,7 @@ jobs:
             - [Python SDK](sdk/python/README.md)
             - [Express Middleware](middleware/express/README.md)
             - [FastAPI Middleware](middleware/fastapi/README.md)
+            - [Django Middleware](middleware/django/README.md)
 
             ---
             *This release was automatically generated by the APort CI/CD pipeline.*

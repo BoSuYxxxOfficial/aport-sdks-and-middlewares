@@ -11,6 +11,7 @@ Official SDKs and middleware for The Passport for AI Agents.
 ### Python
 - **SDK**: [aporthq-sdk-python](sdk/python/) - Core Python SDK  
 - **Middleware**: [agent-passport-middleware-fastapi](middleware/fastapi/) - FastAPI middleware
+- **Middleware**: [aporthq-middleware-django](middleware/django/) - Django middleware
 
 ## Quick Start
 
@@ -24,6 +25,7 @@ npm install @aporthq/middleware-express
 \`\`\`bash
 pip install aporthq-sdk-python
 pip install agent-passport-middleware-fastapi
+pip install aporthq-middleware-django
 \`\`\`
 
 ## Documentation
